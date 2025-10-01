@@ -1,0 +1,276 @@
+# Alliance Auth Shopping Cart
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-4.0%2B-green.svg)](https://www.djangoproject.com/)
+[![Alliance Auth](https://img.shields.io/badge/allianceauth-4.0%2B-blue.svg)](https://gitlab.com/allianceauth/allianceauth)
+
+A player-to-player shopping cart and contract marketplace for Alliance Auth. Allows users to request items and fulfillers to claim and complete orders through EVE Online contracts tracked via ESI.
+
+## Features
+
+### 🛒 Dual Workflow System
+
+**Workflow A: Requester Has Items**
+- Requester creates a request with items they already own
+- Sets pickup/delivery locations and contract price
+- Fulfiller claims the request to deliver items
+- Requester creates in-game contract
+- App automatically tracks contract via ESI
+- Auto-marks as fulfilled when contract completes
+
+**Workflow B: Fulfiller Buys Items**
+- Requester creates a request for items they need purchased
+- Sets budget and delivery requirements
+- Fulfiller claims, buys items, and creates contract
+- Requester receives Discord PM with contract details
+- Requester accepts contract in-game
+- App tracks and auto-marks as fulfilled
+
+### 🎯 Core Features
+- ✅ EVE item parser (copy/paste from game)
+- ✅ ESI contract tracking and verification
+- ✅ Discord notifications (DMs and webhooks)
+- ✅ Marketplace with filtering
+- ✅ Fulfiller leaderboard
+- ✅ Admin management tools
+- ✅ Permission system with superuser bypass
+- ✅ Automatic status updates
+
+## Installation
+
+### Prerequisites
+- Alliance Auth 4.0.0 or higher
+- Python 3.8 or higher
+- Django 4.0 or higher
+
+### Step 1: Install the Package
+
+```bash
+pip install allianceauth-shopping-cart
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/atthompson13/aa-shoppingcart.git
+cd aa-shoppingcart
+pip install -e .
+```
+
+### Step 2: Add to Django Settings
+
+Add `shopping_cart` to your `INSTALLED_APPS` in `settings/local.py`:
+
+```python
+INSTALLED_APPS += [
+    'shopping_cart',
+]
+```
+
+### Step 3: Configure ESI Scopes
+
+The app requires the following ESI scopes for contract tracking:
+
+```python
+# These are automatically registered, but ensure your users have:
+# - esi-contracts.read_character_contracts.v1
+# - esi-universe.read_structures.v1
+```
+
+### Step 4: Run Migrations
+
+```bash
+python manage.py migrate shopping_cart
+```
+
+### Step 5: Collect Static Files
+
+```bash
+python manage.py collectstatic
+```
+
+### Step 6: Restart Services
+
+```bash
+supervisorctl restart myauth:
+```
+
+## Configuration
+
+Add these optional settings to your `settings/local.py`:
+
+```python
+# App Display Name
+SHOPPING_CART_APP_NAME = "Shopping Cart"
+
+# Feature Toggles
+SHOPPING_CART_ENABLE_MARKETPLACE = True
+SHOPPING_CART_ENABLE_LEADERBOARD = True
+
+# Discord Notifications
+SHOPPING_CART_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/..."
+SHOPPING_CART_NOTIFY_ON_NEW_REQUEST = True
+SHOPPING_CART_NOTIFY_ON_CLAIM = True
+SHOPPING_CART_NOTIFY_ON_DELIVERY = True
+
+# Retention Settings (days)
+SHOPPING_CART_FULFILLED_RETENTION_DAYS = 90
+SHOPPING_CART_ABANDONED_CART_DAYS = 30
+SHOPPING_CART_PENDING_REMINDER_DAYS = 7
+SHOPPING_CART_CLAIM_TIMEOUT_DAYS = 14
+
+# Pagination
+SHOPPING_CART_PAGINATION_SIZE = 25
+
+# Trading Hubs
+SHOPPING_CART_DEFAULT_HUBS = [
+    'Jita',
+    'Amarr',
+    'Dodixie',
+    'Rens',
+    'Hek',
+]
+
+# Item Validation (requires django-eveuniverse)
+SHOPPING_CART_VALIDATE_ITEMS_VIA_ESI = False
+```
+
+## Permissions
+
+The app uses the following permissions:
+
+| Permission | Description |
+|------------|-------------|
+| `basic_access` | Can access the shopping cart app |
+| `request_items` | Can create and submit item requests |
+| `fulfill_requests` | Can claim and fulfill orders |
+| `manage_requests` | Full admin management access |
+
+**Note:** Superusers automatically have all permissions.
+
+## Usage
+
+### For Requesters
+
+1. Navigate to **Shopping Cart** in the menu
+2. Click **Create Request**
+3. Choose request type:
+   - "I have the items" (Workflow A)
+   - "Please buy items for me" (Workflow B)
+4. Paste items from EVE (Ctrl+C in inventory)
+5. Set pickup/delivery locations
+6. Set price or budget
+7. Submit request
+
+**If Workflow A:**
+- Wait for fulfiller to claim
+- Create contract in-game when notified
+- Enter contract ID in app
+- App tracks automatically
+
+**If Workflow B:**
+- Wait for fulfiller to claim and create contract
+- Check Discord DM for contract details
+- Accept contract in-game
+- App tracks automatically
+
+### For Fulfillers
+
+1. Navigate to **Marketplace** in the menu
+2. Browse available requests
+3. Filter by hub or item
+4. Click **Claim** on a request
+
+**If Workflow A:**
+- Wait for requester to create contract
+- Accept contract in-game
+- App tracks and marks fulfilled
+
+**If Workflow B:**
+- Buy items in-game
+- Create contract
+- Enter contract ID and terms in app
+- Wait for requester to accept
+- App tracks and marks fulfilled
+
+### For Admins
+
+1. Navigate to **Admin Dashboard**
+2. View all requests and contracts
+3. Manual intervention if needed
+4. Configure app settings
+5. View statistics
+
+## Celery Tasks
+
+The app includes several background tasks:
+
+- **Contract Monitoring**: Checks contract status every 5 minutes
+- **Cleanup Tasks**: Removes old fulfilled requests (configurable retention)
+- **Daily Reports**: Statistics and summaries
+- **Reminder Tasks**: Notifies about pending requests
+
+Ensure your Celery workers are running:
+
+```bash
+celery -A myauth worker -l info
+celery -A myauth beat -l info
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Install test dependencies
+pip install -e .[test]
+
+# Run tests
+make test
+
+# Or with tox
+tox
+```
+
+### Pre-commit Hooks
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/atthompson13/aa-shoppingcart/issues)
+- **Discord**: Join Alliance Auth Discord
+- **Documentation**: [Full Docs](https://github.com/atthompson13/aa-shoppingcart/wiki)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+- Built for [Alliance Auth](https://gitlab.com/allianceauth/allianceauth)
+- Inspired by [Corp Tools](https://github.com/Solar-Helix-Independent-Transport/allianceauth-corp-tools)
+- Created by atthompson13
+
+## Changelog
+
+### Version 0.1.0 (Upcoming)
+- Initial release
+- Dual workflow system
+- ESI contract tracking
+- Discord notifications
+- Marketplace and leaderboard
