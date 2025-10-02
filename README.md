@@ -11,6 +11,9 @@ pip install git+https://github.com/atthompson13/aa-shoppingcart.git
 
 Enable your EVE Online alliance members to create item requests and have them fulfilled by other players, with automatic contract tracking via ESI integration.
 
+**Author:** atthompson13  
+**Last Updated:** 2025-10-02 04:00:32 UTC
+
 ---
 
 ## 📋 Table of Contents
@@ -90,8 +93,8 @@ Shopping Cart enables two distinct workflows for item requests:
 | PostgreSQL or MySQL | Latest stable |
 
 **Python Dependencies:**
-- `allianceauth>=4.0.0`
-- `allianceauth-app-utils>=1.13.0`
+- `allianceauth>=4.0.0,<5.0.0`
+- `allianceauth-app-utils>=1.18.0`
 - `django-eveuniverse>=1.0.0`
 - `django-esi>=4.0.0`
 
@@ -104,6 +107,11 @@ Shopping Cart enables two distinct workflows for item requests:
 **From GitHub:**
 ```bash
 pip install git+https://github.com/atthompson13/aa-shoppingcart.git
+```
+
+**From PyPI (after publishing):**
+```bash
+pip install allianceauth-shopping-cart
 ```
 
 **For Development:**
@@ -136,19 +144,48 @@ python manage.py migrate shopping_cart
 python manage.py collectstatic --noinput
 ```
 
-### Step 5: Configure Celery (Recommended)
+### Step 5: Configure Celery Tasks (Required)
 
-Add to your Celery configuration:
+Add the following to your `myauth/settings/local.py`:
 
 ```python
-# In your celery.py or settings
-from shopping_cart.celery_tasks import CELERYBEAT_SCHEDULE
+from celery.schedules import crontab
 
-# Merge with existing schedule
-CELERYBEAT_SCHEDULE.update(CELERYBEAT_SCHEDULE)
+# Shopping Cart - Monitor active contracts every 10 minutes
+CELERYBEAT_SCHEDULE['shopping_cart_monitor_active_contracts'] = {
+    'task': 'shopping_cart.tasks.monitor_all_active_contracts',
+    'schedule': crontab(minute='*/10'),
+}
+
+# Shopping Cart - Cleanup old requests daily at 3 AM UTC
+CELERYBEAT_SCHEDULE['shopping_cart_cleanup_old_requests'] = {
+    'task': 'shopping_cart.tasks.cleanup_old_requests',
+    'schedule': crontab(minute=0, hour='3'),
+}
+
+# Shopping Cart - Expire abandoned requests daily at 4 AM UTC
+CELERYBEAT_SCHEDULE['shopping_cart_expire_abandoned_requests'] = {
+    'task': 'shopping_cart.tasks.expire_abandoned_requests',
+    'schedule': crontab(minute=0, hour='4'),
+}
 ```
 
-This enables automatic contract monitoring and cleanup tasks.
+**Customization Options:**
+
+- **Change monitoring frequency:**
+  ```python
+  # Every 5 minutes (more frequent)
+  'schedule': crontab(minute='*/5'),
+  
+  # Every 30 minutes (less frequent)
+  'schedule': crontab(minute='*/30'),
+  ```
+
+- **Change cleanup time:**
+  ```python
+  # Run at midnight UTC
+  'schedule': crontab(minute=0, hour='0'),
+  ```
 
 ### Step 6: Restart Services
 
@@ -166,12 +203,28 @@ systemctl restart allianceauth-beat
 systemctl restart allianceauth-worker
 ```
 
+**Using Docker:**
+```bash
+docker-compose restart allianceauth
+docker-compose restart allianceauth-beat
+docker-compose restart allianceauth-worker
+```
+
 ### Step 7: Verify Installation
 
 1. Log in to Alliance Auth
 2. Check if "Shopping Cart" appears in the navigation menu
 3. Click on it to access the app
 4. Try creating a test request
+
+**Verify Celery Tasks:**
+```bash
+# Check Celery beat logs
+tail -f /var/log/supervisor/myauth-beat.log
+
+# You should see:
+# [INFO] Scheduler: Sending due task shopping_cart_monitor_active_contracts
+```
 
 ---
 
@@ -521,9 +574,13 @@ Shopping Cart includes background tasks for automation.
 
 | Task | Schedule | Purpose |
 |------|----------|---------|
-| `monitor_all_active_contracts` | Every 10 minutes | Check contract status via ESI |
-| `cleanup_old_requests` | Daily at 3:00 AM | Remove old completed/cancelled requests |
-| `expire_abandoned_requests` | Daily at 4:00 AM | Mark old pending requests as expired |
+| `shopping_cart_monitor_active_contracts` | Every 10 minutes | Check contract status via ESI |
+| `shopping_cart_cleanup_old_requests` | Daily at 3:00 AM UTC | Remove old completed/cancelled requests |
+| `shopping_cart_expire_abandoned_requests` | Daily at 4:00 AM UTC | Mark old pending requests as expired |
+
+### Configuration
+
+Tasks are configured in `local.py` as shown in [Step 5 of Installation](#step-5-configure-celery-tasks-required).
 
 ### Manual Task Execution
 
@@ -553,15 +610,12 @@ tail -f /var/log/supervisor/myauth-worker.log
 tail -f /var/log/supervisor/myauth-beat.log
 ```
 
-### Celery Configuration
+### Task Logs
 
-If tasks aren't running, verify Celery configuration in your `celery.py`:
-
-```python
-from shopping_cart.celery_tasks import CELERYBEAT_SCHEDULE
-
-# Merge schedules
-app.conf.beat_schedule.update(CELERYBEAT_SCHEDULE)
+You should see entries like:
+```
+[INFO] Scheduler: Sending due task shopping_cart_monitor_active_contracts
+[INFO] Task shopping_cart.tasks.monitor_all_active_contracts[abc-123] succeeded
 ```
 
 ---
@@ -624,6 +678,31 @@ python manage.py shell
 # Manually trigger monitoring
 >>> from shopping_cart.tasks import monitor_contract_status
 >>> monitor_contract_status.delay(request_id=42)
+```
+
+### Celery Tasks Not Running
+
+**Possible Causes:**
+- Celery beat not running
+- Tasks not added to `CELERYBEAT_SCHEDULE`
+- Syntax error in `local.py`
+
+**Solutions:**
+```bash
+# Check Celery beat status
+supervisorctl status myauth-beat
+
+# Restart Celery beat
+supervisorctl restart myauth-beat
+
+# Check logs for errors
+tail -f /var/log/supervisor/myauth-beat.log
+
+# Verify configuration
+python manage.py shell
+>>> from django.conf import settings
+>>> 'shopping_cart_monitor_active_contracts' in settings.CELERYBEAT_SCHEDULE
+True
 ```
 
 ### Database Migration Errors
@@ -970,6 +1049,7 @@ Future enhancements being considered:
 - [ ] Enhanced statistics dashboard
 - [ ] Export functionality (CSV, Excel)
 - [ ] API endpoints for third-party integrations
+- [ ] Mobile app (potential)
 
 Want to see something specific? [Open a feature request!](https://github.com/atthompson13/aa-shoppingcart/issues/new)
 
@@ -977,9 +1057,10 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 
 <div align="center">
 
-**Made with ❤️ for the EVE Online community by atthompson13**
+**Made with ❤️ for the EVE Online community**
 
-**Last Updated:** 2025-10-02 02:25:20 UTC
+**Author:** atthompson13  
+**Last Updated:** 2025-10-02 04:00:32 UTC
 
 ⭐ Star this repo if you find it useful!
 
