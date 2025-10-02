@@ -1,0 +1,18 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include INSTALLATION.md
+include SECURITY.md
+include VERSION
+include requirements-dev.txt
+include tox.ini
+include Makefile
+include runtests.py
+
+recursive-include shopping_cart/static *
+recursive-include shopping_cart/templates *
+recursive-include shopping_cart/migrations *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store
