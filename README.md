@@ -1,3 +1,5 @@
+pip install git+https://github.com/atthompson13/aa-shoppingcart.git
+
 # Alliance Auth Shopping Cart
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -984,4 +986,5 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 [Report Bug](https://github.com/atthompson13/aa-shoppingcart/issues) · [Request Feature](https://github.com/atthompson13/aa-shoppingcart/issues) · [View Releases](https://github.com/atthompson13/aa-shoppingcart/releases)
 
 </div>
+
 
