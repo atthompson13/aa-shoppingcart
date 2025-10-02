@@ -968,7 +968,6 @@ Future enhancements being considered:
 - [ ] Enhanced statistics dashboard
 - [ ] Export functionality (CSV, Excel)
 - [ ] API endpoints for third-party integrations
-- [ ] Mobile app (potential)
 
 Want to see something specific? [Open a feature request!](https://github.com/atthompson13/aa-shoppingcart/issues/new)
 
@@ -985,3 +984,4 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 [Report Bug](https://github.com/atthompson13/aa-shoppingcart/issues) · [Request Feature](https://github.com/atthompson13/aa-shoppingcart/issues) · [View Releases](https://github.com/atthompson13/aa-shoppingcart/releases)
 
 </div>
+
