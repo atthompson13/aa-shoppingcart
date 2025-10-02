@@ -128,7 +128,7 @@ Edit your Alliance Auth settings file (typically `myauth/settings/local.py`):
 ```python
 # Add to INSTALLED_APPS
 INSTALLED_APPS += [
-    'shopping_cart',
+    'allianceauth-shopping-cart==0.1.0',
 ]
 ```
 
@@ -1067,5 +1067,6 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 [Report Bug](https://github.com/atthompson13/aa-shoppingcart/issues) · [Request Feature](https://github.com/atthompson13/aa-shoppingcart/issues) · [View Releases](https://github.com/atthompson13/aa-shoppingcart/releases)
 
 </div>
+
 
 
