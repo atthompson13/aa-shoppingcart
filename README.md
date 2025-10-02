@@ -128,14 +128,14 @@ Edit your Alliance Auth settings file (typically `myauth/settings/local.py`):
 ```python
 # Add to INSTALLED_APPS
 INSTALLED_APPS += [
-    'allianceauth-shopping-cart==0.1.0',
+    'shopping-cart==0.1.0',
 ]
 ```
 
 ### Step 3: Run Migrations
 
 ```bash
-python manage.py migrate shopping_cart
+python manage.py migrate
 ```
 
 ### Step 4: Collect Static Files
@@ -1067,6 +1067,7 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 [Report Bug](https://github.com/atthompson13/aa-shoppingcart/issues) · [Request Feature](https://github.com/atthompson13/aa-shoppingcart/issues) · [View Releases](https://github.com/atthompson13/aa-shoppingcart/releases)
 
 </div>
+
 
 
 
