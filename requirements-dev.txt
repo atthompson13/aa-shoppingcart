@@ -1,3 +1,7 @@
 pytest>=7.0.0
 black>=23.0.0
 flake8>=6.0.0
+allianceauth>=5.0.0
+allianceauth-app-utils>=1.18.0
+django-eveuniverse>=1.0.0
+django-esi>=4.0.0
