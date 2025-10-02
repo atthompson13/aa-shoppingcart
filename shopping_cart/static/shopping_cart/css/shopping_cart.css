@@ -1,0 +1,24 @@
+/* Shopping Cart CSS */
+.shopping-cart-container {
+    margin: 20px 0;
+}
+
+.request-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    border-radius: 0.25rem;
+}
+
+.items-list {
+    font-family: monospace;
+    font-size: 0.9em;
+}

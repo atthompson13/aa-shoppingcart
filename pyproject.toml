@@ -1,0 +1,24 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+name = "allianceauth-shopping-cart"
+description = "Player-to-player shopping cart and contract marketplace for Alliance Auth"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "atthompson13" }]
+requires-python = ">=3.8"
+dependencies = [
+    "allianceauth>=4.0.0",
+    "allianceauth-app-utils>=1.13.0",
+    "django-eveuniverse>=1.0.0",
+    "django-esi>=4.0.0",
+]
+dynamic = ["version"]
+
+[tool.hatch.version]
+path = "shopping_cart/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shopping_cart"]
