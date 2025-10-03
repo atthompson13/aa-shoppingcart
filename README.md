@@ -1,5 +1,3 @@
-pip install git+https://github.com/atthompson13/aa-shoppingcart.git
-
 # Alliance Auth Shopping Cart
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -128,9 +126,13 @@ Edit your Alliance Auth settings file (typically `myauth/settings/local.py`):
 ```python
 # Add to INSTALLED_APPS
 INSTALLED_APPS += [
-    'shopping-cart==0.1.0',
+    'shopping_cart',
 ]
 ```
+
+# add to requirements.txt
+
+allianceauth-shopping-cart==0.1.0
 
 ### Step 3: Run Migrations
 
@@ -622,6 +624,27 @@ You should see entries like:
 
 ## 🔧 Troubleshooting
 
+### Installation Package Not Found Error
+
+**Issue:** `ERROR: Could not find a version that satisfies the requirement shopping_cart==0.1.0`
+
+**Cause:** Mismatch between package name and app name in configuration.
+
+**Solution:**
+- **For GitHub installation:** Use `allianceauth-shopping-cart==0.1.0` in requirements.txt
+- **App name in INSTALLED_APPS:** Always use `'shopping_cart'` (the Python module name)
+- **Package name for pip:** Use `allianceauth-shopping-cart` (from pyproject.toml)
+
+```bash
+# In requirements.txt (for Alliance Auth)
+allianceauth-shopping-cart==0.1.0
+
+# In local.py INSTALLED_APPS
+INSTALLED_APPS += [
+    'shopping_cart',  # Python module name, not package name
+]
+```
+
 ### App Not Showing in Menu
 
 **Possible Causes:**
@@ -1067,6 +1090,7 @@ Want to see something specific? [Open a feature request!](https://github.com/att
 [Report Bug](https://github.com/atthompson13/aa-shoppingcart/issues) · [Request Feature](https://github.com/atthompson13/aa-shoppingcart/issues) · [View Releases](https://github.com/atthompson13/aa-shoppingcart/releases)
 
 </div>
+
 
 
 
